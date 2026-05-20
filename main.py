@@ -1,0 +1,1 @@
+from gui import *  # Importe toutes les fonctions, classes et variables du fichier gui.py pour les utiliser directement
