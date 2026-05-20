@@ -9,7 +9,7 @@ create_db()
 
 app = Flask(__name__)
 CORS(app)
-BASE_URL = "http://192.168.1.15:5000"
+BASE_URL = ""
 # =========================
 # ALERTS STORAGE (RAM)
 # =========================
@@ -418,4 +418,4 @@ def view_file(filename):
 # START SERVER
 # =========================
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)
