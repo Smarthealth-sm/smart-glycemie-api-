@@ -9,7 +9,7 @@ create_db()
 
 app = Flask(__name__)
 CORS(app)
-BASE_URL = ""
+BASE_URL = "https://smart-glycemie-api.onrender.com"
 # =========================
 # ALERTS STORAGE (RAM)
 # =========================

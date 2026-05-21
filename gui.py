@@ -372,7 +372,7 @@ def trigger_alert(title, message, glucose):
     try:
 
         requests.post(
-    https://smart-glycemie-api.onrender.com/add_alert",
+    "https://smart-glycemie-api.onrender.com/add_alert",
     json={
         "email": patient_info.get("email", ""),
         "title": title,
@@ -593,7 +593,7 @@ def open_patient_sheet():
 
         try:
             response = requests.post(
-                https://smart-glycemie-api.onrender.com/update_patient",
+             "https://smart-glycemie-api.onrender.com/update_patient",
                 json=data
             )
 
