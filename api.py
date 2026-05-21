@@ -192,7 +192,7 @@ def signup():
                 telephone,
                 profile
             )
-            VALUES (?, 'homme', 0, 0, 0, 'non', '', 'normal')
+            VALUES (?, 'sexe', 0, 0, 0, 'non', '', 'normal')
             """, (email,))
 
         conn.commit()
