@@ -108,7 +108,7 @@ def login():
 @app.route("/patient", methods=["GET"])
 def get_patient():
 
-    email = request.args.get("email").lower().strip()
+    email = (request.args.get("email") or "").lower().strip()
 
     conn = sqlite3.connect("glycemia.db")
     cursor = conn.cursor()
@@ -206,27 +206,29 @@ def signup():
         if not existing_patient:
 
             cursor.execute("""
-            INSERT INTO patient(
-                sexe,
-                grossesses,
-                age,
-                bmi,
-                diabetique,
-                email,
-                telephone,
-                profile
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?,?)
-        """, (
-            data.get("sexe", ""),
-            data.get("grossesses", 0),
-            data.get("age", 0),
-            data.get("bmi", 0),
-            data.get("diabetique", ""),
-            email,
-            data.get("telephone", ""),
-            data.get("profile", ""),
-        ))
+INSERT INTO patient (
+    sexe, grossesses, age, bmi, diabetique,
+    email, telephone, profile
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(email) DO UPDATE SET
+    sexe=excluded.sexe,
+    grossesses=excluded.grossesses,
+    age=excluded.age,
+    bmi=excluded.bmi,
+    diabetique=excluded.diabetique,
+    telephone=excluded.telephone,
+    profile=excluded.profile
+""", (
+    data.get("sexe", ""),
+    data.get("grossesses", 0),
+    data.get("age", 0),
+    data.get("bmi", 0),
+    data.get("diabetique", ""),
+    email,
+    data.get("telephone", ""),
+    data.get("profile", ""),
+))
 
     
 
@@ -296,30 +298,7 @@ def update_patient():
     # =========================
     # INSERT sinon
     # =========================
-    else:
-
-        cursor.execute("""
-            INSERT INTO patient(
-                sexe,
-                grossesses,
-                age,
-                bmi,
-                diabetique,
-                email,
-                telephone,
-                profile
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?,?)
-        """, (
-            data.get("sexe", ""),
-            data.get("grossesses", 0),
-            data.get("age", 0),
-            data.get("bmi", 0),
-            data.get("diabetique", ""),
-            email,
-            data.get("telephone", ""),
-            data.get("profile", ""),
-        ))
+    
 
     conn.commit()
     conn.close()
