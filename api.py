@@ -26,7 +26,7 @@ def update_patient_logic(patient):
 # =========================
 @app.route('/glycemia', methods=['GET'])
 def get_glycemia():
-
+    
     email = request.args.get("email")
 
     conn = sqlite3.connect("glycemia.db")
@@ -58,7 +58,7 @@ def add_glycemia():
 
     conn = sqlite3.connect("glycemia.db")
     cursor = conn.cursor()
-
+    print("EMAIL RECEIVED:", email)
     cursor.execute("""
         INSERT INTO glycemia(email, date, value, source)
         VALUES (?, ?, ?, ?)
