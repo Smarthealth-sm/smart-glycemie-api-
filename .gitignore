@@ -1,7 +1,7 @@
 __pycache__/
 *.pyc
-glycemia.db
+*.db
+*.sqbpro
 pdfs/
 reports/
-*.db
-.env
+*.png
