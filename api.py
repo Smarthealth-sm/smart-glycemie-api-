@@ -67,7 +67,7 @@ def add_glycemia():
         data.get("date"),
         data.get("value"),
         data.get("source")
-    ))
+    ))  
 
     conn.commit()
     conn.close()
