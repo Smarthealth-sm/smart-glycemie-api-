@@ -1,0 +1,13 @@
+
+cas a : normal 
+glucose_values = [85, 92, 88, 95, 90]
+
+Cas B : Hypoglycémie (Urgence Basse)
+glucose_values = [55, 50, 48, 52]
+
+Cas C : Hyperglycémie / Risque Diabète (IA + Alerte)
+L'IA doit voir un risque élevé (proche de 80-90%).
+glucose_values = [210, 240, 225, 280]
+
+cas D : Mix (tous le cas )
+glucose_values = [95, 96, 105, 120, 145, 175, 195, 210, 208, 190, 160, 130, 100, 85, 72, 65, 58, 52, 53, 65, 82, 94]

@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+glycemia.db
+pdfs/
+reports/
+*.db
+.env
