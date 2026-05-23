@@ -353,6 +353,39 @@ def get_alerts():
         for r in rows
     ])
 
+@app.route("/add_glycemia", methods=["POST"])
+def add_glycemia():
+
+    data = request.json
+
+    conn = sqlite3.connect(
+        "glycemia.db",
+        timeout=20,
+        check_same_thread=False
+    )
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO glycemia (
+            email,
+            date,
+            value,
+            source
+        )
+        VALUES (?, ?, ?, ?)
+    """, (
+        data.get("email"),
+        data.get("date"),
+        data.get("value"),
+        data.get("source")
+    ))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"success": True})
+
 @app.route('/add_alert', methods=['POST'])
 def add_alert():
 
@@ -448,7 +481,39 @@ def download_file(filename):
 def view_file(filename):
     return send_from_directory("pdfs", filename)
 
+# =========================
+# UPLOAD PDF
+# =========================
+@app.route("/upload_pdf", methods=["POST"])
+def upload_pdf():
 
+    if "file" not in request.files:
+        return jsonify({
+            "success": False,
+            "message": "No file"
+        }), 400
+
+    file = request.files["file"]
+
+    if file.filename == "":
+        return jsonify({
+            "success": False,
+            "message": "Empty filename"
+        }), 400
+
+    folder = "pdfs"
+
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    filepath = os.path.join(folder, file.filename)
+
+    file.save(filepath)
+
+    return jsonify({
+        "success": True,
+        "filename": file.filename
+    })
 # =========================
 # START SERVER
 # =========================

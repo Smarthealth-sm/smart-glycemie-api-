@@ -896,6 +896,22 @@ def simulate():
                     "Simulation"
                 )
 
+                try:
+
+                    requests.post(
+                       "https://smart-glycemie-api.onrender.com/add_glycemia",
+                      json={
+                          "email": patient_info.get("email", ""),
+                          "date": current_day,
+                         "value": g,
+                         "source": "Simulation"
+                         }
+                    )
+
+                except Exception as e:
+
+                     print("Erreur API glycémie :", e)
+
                 # rapport hebdomadaire
                 if (i + 1) % 7 == 0:
 
@@ -908,9 +924,9 @@ def simulate():
 
                     summary_text = generate_summary()
 
-                    try:
+                try:
 
-                        pdf_file = generate_pdf(
+                       pdf_file = generate_pdf(
                             history_global,
                             avg,
                             max_val,
@@ -921,12 +937,35 @@ def simulate():
                             patient_info,
                             summary_text,
                             report_name=f"{patient_info['email']}_Semaine_{(i + 1)//7}"
-                        )
+                         )
 
-                        print(f"✅ Rapport semaine {(i + 1)//7} créé")
+                       print(f"✅ Rapport semaine {(i + 1)//7} créé")
 
-                    except Exception as e:
-                        print("❌ Erreur PDF semaine :", e)
+    # upload vers Render
+                       try:
+
+                             with open(pdf_file, "rb") as f:
+
+                               requests.post(
+                                      "https://smart-glycemie-api.onrender.com/upload_pdf",
+                                    files={
+                                     "file": (
+                                         os.path.basename(pdf_file),
+                                         f,
+                                         "application/pdf"
+                                        )
+                                    }
+                                )
+
+                             print("✅ PDF uploadé vers Render")
+
+                       except Exception as e:
+
+                             print("❌ Erreur upload PDF :", e)
+
+                except Exception as e:
+
+                    print("❌ Erreur PDF semaine :", e)
 
                 pregnancies = (
                     int(patient_info["grossesses"])
@@ -1171,6 +1210,27 @@ def create_complete_pdf():
     patient_info,
     summary_text
 )
+    
+    try:
+
+      with open(pdf_file, "rb") as f:
+
+        requests.post(
+            "https://smart-glycemie-api.onrender.com/upload_pdf",
+            files={
+                "file": (
+                    os.path.basename(pdf_file),
+                    f,
+                    "application/pdf"
+                )
+            }
+        )
+
+        print("✅ PDF uploadé vers Render")
+
+    except Exception as e:
+
+        print("❌ Erreur upload PDF :", e)
 
     return pdf_file
 
