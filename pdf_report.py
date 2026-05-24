@@ -28,7 +28,7 @@ def generate_pdf(
 report_name="rapport"
 ):
     date_formatee = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-    nom_fichier = f"pdfs/{patient_info['email']}_{report_name}.pdf"
+    nom_fichier = f"pdfs/{report_name}.pdf"
 
     doc = SimpleDocTemplate(nom_fichier)
     styles = getSampleStyleSheet()
