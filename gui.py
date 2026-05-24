@@ -936,7 +936,7 @@ def simulate():
                             reco,
                             patient_info,
                             summary_text,
-                            report_name=f"{patient_info['email']}_Semaine_{(i + 1)//7}"
+                            report_name=f"Semaine_{(i + 1)//7}"
                          )
 
                        print(f"✅ Rapport semaine {(i + 1)//7} créé")
@@ -1097,7 +1097,7 @@ def simulate():
                 reco,
                 patient_info,
                 summary_text,
-                report_name=f"{patient_info['email']}_Rapport_Mensuel"
+                report_name="Rapport_Mensuel"
             )
 
             print("✅ Rapport mensuel créé")
