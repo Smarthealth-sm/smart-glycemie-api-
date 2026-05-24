@@ -858,25 +858,37 @@ def simulate():
     global detailed_text_memory
 
     try:
+
         history_global.clear()
         detailed_text_memory = ""
         text_diag_detail.delete("1.0", tk.END)
 
         history = []
 
-        patient_profile = patient_info.get("profile") or "normal"
+        patient_profile = patient_info.get("profile")
 
-        glucose_values = profiles.get(patient_profile, profiles["normal"])
+        if not patient_profile:
+            patient_profile = "normal"
+
+        glucose_values = profiles.get(
+            patient_profile,
+            profiles["normal"]
+        )
 
         global days_labels
-        days_labels = [f"Jour {i+1}" for i in range(len(glucose_values))]
+
+        days_labels = [
+            f"Jour {i+1}"
+            for i in range(len(glucose_values))
+        ]
 
         for i, g in enumerate(glucose_values):
 
             try:
+
                 current_day = days_labels[i]
 
-                # DB local
+                # sauvegarde database
                 insert_data(
                     patient_info.get("email", ""),
                     current_day,
@@ -884,34 +896,37 @@ def simulate():
                     "Simulation"
                 )
 
-                # API cloud
                 try:
-                    requests.post(
-                        "https://smart-glycemie-api.onrender.com/add_glycemia",
-                        json={
-                            "email": patient_info.get("email", ""),
-                            "date": current_day,
-                            "value": g,
-                            "source": "Simulation"
-                        }
-                    )
-                except Exception as e:
-                    print("Erreur API glycémie :", e)
 
-                # =========================
-                # RAPPORT HEBDO
-                # =========================
-                if (i + 1) % 7 == 0 and history_global:
+                    requests.post(
+                       "https://smart-glycemie-api.onrender.com/add_glycemia",
+                      json={
+                          "email": patient_info.get("email", ""),
+                          "date": current_day,
+                         "value": g,
+                         "source": "Simulation"
+                         }
+                    )
+
+                except Exception as e:
+
+                     print("Erreur API glycémie :", e)
+
+                # rapport hebdomadaire
+                if (i + 1) % 7 == 0:
 
                     avg = sum(history_global) / len(history_global)
                     max_val = max(history_global)
                     min_val = min(history_global)
 
-                    score_global, interpretation, reco = calculate_ai_metrics()
+                    score_global, interpretation, reco = \
+                        calculate_ai_metrics()
+
                     summary_text = generate_summary()
 
-                    try:
-                        pdf_file = generate_pdf(
+                try:
+
+                       pdf_file = generate_pdf(
                             history_global,
                             avg,
                             max_val,
@@ -921,38 +936,40 @@ def simulate():
                             reco,
                             patient_info,
                             summary_text,
-                            report_name=f"{patient_info.get('email','user')}_Semaine_{(i+1)//7}"
-                        )
+                            report_name=f"{patient_info['email']}_Semaine_{(i + 1)//7}"
+                         )
 
-                        print(f"✅ Rapport semaine {(i+1)//7} créé")
+                       print(f"✅ Rapport semaine {(i + 1)//7} créé")
 
-                        # upload PDF
-                        try:
-                            with open(pdf_file, "rb") as f:
-                                requests.post(
-                                    "https://smart-glycemie-api.onrender.com/upload_pdf",
+    # upload vers Render
+                       try:
+
+                             with open(pdf_file, "rb") as f:
+
+                               requests.post(
+                                      "https://smart-glycemie-api.onrender.com/upload_pdf",
                                     files={
-                                        "file": (
-                                            os.path.basename(pdf_file),
-                                            f,
-                                            "application/pdf"
+                                     "file": (
+                                         os.path.basename(pdf_file),
+                                         f,
+                                         "application/pdf"
                                         )
                                     }
                                 )
-                            print("✅ PDF uploadé vers Render")
 
-                        except Exception as e:
-                            print("❌ Erreur upload PDF :", e)
+                             print("✅ PDF uploadé vers Render")
 
-                    except Exception as e:
-                        print("❌ Erreur génération PDF semaine :", e)
+                       except Exception as e:
 
-                # =========================
-                # ML INPUT
-                # =========================
+                             print("❌ Erreur upload PDF :", e)
+
+                except Exception as e:
+
+                    print("❌ Erreur PDF semaine :", e)
+
                 pregnancies = (
-                    int(patient_info.get("grossesses", 0))
-                    if patient_info.get("sexe", "").lower() == "femme"
+                    int(patient_info["grossesses"])
+                    if patient_info["sexe"].lower() == "femme"
                     else 0
                 )
 
@@ -962,9 +979,9 @@ def simulate():
                     80,
                     25,
                     100,
-                    float(patient_info.get("bmi", 0)),
+                    float(patient_info["bmi"]),
                     0.5,
-                    int(patient_info.get("age", 0))
+                    int(patient_info["age"])
                 ]
 
                 prob = model.predict(
@@ -980,38 +997,97 @@ def simulate():
 
                 # alertes
                 if g > 180:
-                    trigger_alert("ALERTE GLYCÉMIQUE", "Pic détecté", g)
-                    send_email_alert(current_day, g, "Hyperglycémie")
+
+                    trigger_alert(
+                        "ALERTE GLYCÉMIQUE",
+                        "Pic détecté",
+                        g
+                    )
+
+                    send_alert_notification(
+                        f"Pic détecté ({g} mg/dL)"
+                    )
+
+                    send_email_alert(
+                        current_day,
+                        g,
+                        "Hyperglycémie"
+                    )
 
                 elif g < 60:
-                    trigger_alert("ALERTE GLYCÉMIQUE", "Hypoglycémie détectée", g)
-                    send_email_alert(current_day, g, "Hypoglycémie")
 
-                # diagnostic UI
-                diag = get_medical_analysis(g, prob, trend, alert, current_day)
+                    trigger_alert(
+                        "ALERTE GLYCÉMIQUE",
+                        "Hypoglycémie détectée",
+                        g
+                    )
 
-                detailed_text_memory += diag
+                    send_alert_notification(
+                        f"Hypoglycémie détectée ({g} mg/dL)"
+                    )
 
+                    send_email_alert(
+                        current_day,
+                        g,
+                        "Hypoglycémie"
+                    )
+
+                # diagnostic
+                diag = get_medical_analysis(
+                    g,
+                    prob,
+                    trend,
+                    alert,
+                    current_day
+                )
+                # ✅ mise à jour diagnostic en temps réel
                 root.after(0, refresh_display)
+
+                # ✅ mise à jour graphe en temps réel
                 root.after(0, lambda h=history.copy(): update_graph(h))
 
+                # ✅ animation lente
                 time.sleep(0.5)
+                detailed_text_memory += diag
+
+                color = "red" if alert else "green"
+
+                root.after(
+                    0,
+                    lambda d=current_day, val=g, tr=trend, al=alert, c=color:
+                    text_diag_detail.insert(
+                        tk.END,
+                        f"[{d}] {val} mg/dL | {tr} | {al}\n",
+                        c
+                    )
+                )
+
+                text_diag_detail.tag_config(
+                    "red",
+                    foreground="red"
+                )
+
+                text_diag_detail.tag_config(
+                    "green",
+                    foreground="green"
+                )
 
             except Exception as e:
                 print(f"❌ Erreur jour {i+1} :", e)
 
-        # =========================
-        # RAPPORT MENSUEL FINAL
-        # =========================
+
+        avg = sum(history_global) / len(history_global)
+        max_val = max(history_global)
+        min_val = min(history_global)
+
+        score_global, interpretation, reco = calculate_ai_metrics()
+
+        summary_text = generate_summary()
+
+        # rapport mensuel
         try:
-            avg = sum(history_global) / len(history_global)
-            max_val = max(history_global)
-            min_val = min(history_global)
 
-            score_global, interpretation, reco = calculate_ai_metrics()
-            summary_text = generate_summary()
-
-            pdf_file = generate_pdf(
+            generate_pdf(
                 history_global,
                 avg,
                 max_val,
@@ -1021,33 +1097,24 @@ def simulate():
                 reco,
                 patient_info,
                 summary_text,
-                report_name="Rapport_Mensuel"
+                report_name=f"{patient_info['email']}_Rapport_Mensuel"
             )
 
             print("✅ Rapport mensuel créé")
-
-            try:
-                with open(pdf_file, "rb") as f:
-                    requests.post(
-                        "https://smart-glycemie-api.onrender.com/upload_pdf",
-                        files={
-                            "file": (
-                                os.path.basename(pdf_file),
-                                f,
-                                "application/pdf"
-                            )
-                        }
-                    )
-                print("✅ Rapport mensuel uploadé vers Render")
-
-            except Exception as e:
-                print("❌ Erreur upload rapport mensuel :", e)
 
         except Exception as e:
             print("❌ Erreur rapport mensuel :", e)
 
     except Exception as e:
-        messagebox.showerror("Erreur Simulation", str(e))
+
+        print("❌ Erreur générale simulation :", e)
+
+        messagebox.showerror(
+            "Erreur Simulation",
+            str(e)
+        )
+
+
 def update_graph(values):
 
     ax.clear()

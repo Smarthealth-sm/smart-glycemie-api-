@@ -438,47 +438,33 @@ def get_pdfs():
 
     for file in files:
 
-      filename = os.path.basename(file)
+        filename = os.path.basename(file)
 
-    # ✅ غير ملفات هذا اليوزر
-      if not filename.startswith(email):
-             continue
+        # ✅ غير ملفات هذا اليوزر
+        if not filename.startswith(email):
+            continue
 
-      lower = filename.lower()
+        lower = filename.lower()
 
-    # =========================
-    # WEEK PDF
-    # =========================
-      if (
-        "semaine" in lower
-        or "weekly" in lower
-        or "rapport_semaine" in lower
-       ):
+        if "semaine" in lower:
 
-         rapports.append({
-            "type": "week",
-            "title": filename,
-            "file": filename,
-            "view_url": f"{BASE_URL}/view/{filename}",
-            "download_url": f"{BASE_URL}/download/{filename}"
-        })
+            rapports.append({
+                "type": "week",
+                "title": filename,
+                "file": filename,
+                "view_url": f"{BASE_URL}/view/{filename}",
+                "download_url": f"{BASE_URL}/download/{filename}"
+            })
 
-    # =========================
-    # MONTH PDF
-    # =========================
-      elif (
-        "mensuel" in lower
-        or "month" in lower
-        or "rapport_mensuel" in lower
-        ):
+        elif "mensuel" in lower:
 
-         rapports.append({
-            "type": "month",
-            "title": filename,
-            "file": filename,
-            "view_url": f"{BASE_URL}/view/{filename}",
-            "download_url": f"{BASE_URL}/download/{filename}"
-        })
+            rapports.append({
+                "type": "month",
+                "title": "Rapport Mensuel",
+                "file": filename,
+                "view_url": f"{BASE_URL}/view/{filename}",
+                "download_url": f"{BASE_URL}/download/{filename}"
+            })
 
     return jsonify(rapports)
 
