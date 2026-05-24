@@ -446,25 +446,25 @@ def get_pdfs():
 
         lower = filename.lower()
 
-        if "semaine" in lower:
+        if "semaine" in lower or "weekly" in lower:
 
-            rapports.append({
-                "type": "week",
-                "title": filename,
-                "file": filename,
-                "view_url": f"{BASE_URL}/view/{filename}",
-                "download_url": f"{BASE_URL}/download/{filename}"
-            })
+          rapports.append({
+        "type": "week",
+        "title": filename,
+        "file": filename,
+        "view_url": f"{BASE_URL}/view/{filename}",
+        "download_url": f"{BASE_URL}/download/{filename}"
+         })
 
-        elif "mensuel" in lower:
+        if "mensuel" in lower or "month" in lower:
 
-            rapports.append({
-                "type": "month",
-                "title": "Rapport Mensuel",
-                "file": filename,
-                "view_url": f"{BASE_URL}/view/{filename}",
-                "download_url": f"{BASE_URL}/download/{filename}"
-            })
+         rapports.append({
+        "type": "month",
+        "title": filename,
+        "file": filename,
+        "view_url": f"{BASE_URL}/view/{filename}",
+        "download_url": f"{BASE_URL}/download/{filename}"
+         })
 
     return jsonify(rapports)
 
