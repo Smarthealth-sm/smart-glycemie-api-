@@ -456,7 +456,7 @@ def get_pdfs():
                 "download_url": f"{BASE_URL}/download/{filename}"
             })
 
-        elif "mensuel" in lower:
+        elif "rapport_mensuel" in lower:
 
             rapports.append({
                 "type": "month",
