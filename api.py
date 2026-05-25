@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
-import sqlite3
+from database import get_connection
 import os
 import glob
 from database import create_db
@@ -29,17 +29,13 @@ def get_glycemia():
 
     email = request.args.get("email")
 
-    conn = sqlite3.connect(
-    "glycemia.db",
-    timeout=20,
-    check_same_thread=False
-)
+    conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
         SELECT date, value
         FROM glycemia
-        WHERE email=?
+        WHERE email=%s
         ORDER BY id DESC
         LIMIT 30
     """, (email,))
@@ -65,16 +61,12 @@ def login():
     email = data.get("email")
     password = data.get("password")
 
-    conn = sqlite3.connect(
-    "glycemia.db",
-    timeout=20,
-    check_same_thread=False
-)
+    conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
         SELECT * FROM users
-        WHERE email=? AND password=?
+        WHERE email=%s AND password=%s
     """, (email, password))
     
 
@@ -99,17 +91,13 @@ def get_patient():
 
     email = request.args.get("email")
 
-    conn = sqlite3.connect(
-    "glycemia.db",
-    timeout=20,
-    check_same_thread=False
-)
+    conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
 SELECT sexe, grossesses, age, bmi, diabetique, email, telephone, profile
 FROM patient
-WHERE email=?
+WHERE email=%s
 ORDER BY rowid DESC
 LIMIT 1
 """, (email,))
@@ -151,18 +139,14 @@ def signup():
         email = data.get("email")
         password = data.get("password")
 
-        conn = sqlite3.connect(
-    "glycemia.db",
-    timeout=20,
-    check_same_thread=False
-)
+        conn = get_connection()
         cursor = conn.cursor()
 
         # =========================
         # vérifier user existe déjà
         # =========================
         cursor.execute(
-            "SELECT * FROM users WHERE email=?",
+            "SELECT * FROM users WHERE email=%s",
             (email,)
         )
         conn.commit()
@@ -181,7 +165,7 @@ def signup():
         # créer user
         # =========================
         cursor.execute(
-            "INSERT INTO users(email, password) VALUES(?, ?)",
+            "INSERT INTO users(email, password) VALUES(%s, %s)",
             (email, password)
         )
         conn.commit()
@@ -189,7 +173,7 @@ def signup():
         # vérifier patient existe déjà
         # =========================
         cursor.execute(
-            "SELECT * FROM patient WHERE email=?",
+            "SELECT * FROM patient WHERE email=%s",
             (email,)
         )
         conn.commit()
@@ -211,7 +195,7 @@ def signup():
                 telephone,
                 profile
             )
-            VALUES (?, '', 0, 0, 0, 'non', '', 'normal')
+            VALUES (%s, '', 0, 0, 0, 'non', '', 'normal')
             """, (email,))
 
         conn.commit()
@@ -239,18 +223,14 @@ def update_patient():
 
     email = data.get("email")
 
-    conn = sqlite3.connect(
-    "glycemia.db",
-    timeout=20,
-    check_same_thread=False
-)
+    conn = get_connection()
     cursor = conn.cursor()
 
     # =========================
     # vérifier patient existe
     # =========================
     cursor.execute(
-        "SELECT * FROM patient WHERE email=?",
+        "SELECT * FROM patient WHERE email=%s",
         (email,)
     )
     conn.commit()
@@ -265,13 +245,13 @@ def update_patient():
         cursor.execute("""
         UPDATE patient
         SET
-            sexe=?,
-            grossesses=?,
-            age=?,
-            bmi=?,
-            diabetique=?,
-            telephone=?
-        WHERE email=?
+            sexe=%s,
+            grossesses=%s,
+            age=%s,
+            bmi=%s,
+            diabetique=%s,
+            telephone=%s
+        WHERE email=%s
     """, (
         data["sexe"],
         data["grossesses"],
@@ -300,7 +280,7 @@ def update_patient():
                 telephone,
                 profile
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?,?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s,%s)
         """, (
             data.get("sexe", ""),
             data.get("grossesses", 0),
@@ -325,17 +305,13 @@ def get_alerts():
 
     email = request.args.get("email")
 
-    conn = sqlite3.connect(
-    "glycemia.db",
-    timeout=20,
-    check_same_thread=False
-)
+    conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
         SELECT title, message, glucose
         FROM alerts
-        WHERE email=?
+        WHERE email=%s
         ORDER BY id DESC
     """, (email,))
     
@@ -358,11 +334,7 @@ def add_glycemia():
 
     data = request.json
 
-    conn = sqlite3.connect(
-        "glycemia.db",
-        timeout=20,
-        check_same_thread=False
-    )
+    conn = get_connection()
 
     cursor = conn.cursor()
 
@@ -373,7 +345,7 @@ def add_glycemia():
             value,
             source
         )
-        VALUES (?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s)
     """, (
         data.get("email"),
         data.get("date"),
@@ -391,11 +363,7 @@ def add_alert():
 
     data = request.json
 
-    conn = sqlite3.connect(
-    "glycemia.db",
-    timeout=20,
-    check_same_thread=False
-)
+    conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -405,7 +373,7 @@ def add_alert():
             message,
             glucose
         )
-        VALUES (?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s)
     """, (
         data.get("email"),
         data.get("title"),

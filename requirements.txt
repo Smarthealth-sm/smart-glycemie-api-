@@ -6,3 +6,4 @@ reportlab
 Flask
 flask-cors
 gunicorn
+psycopg2-binary
