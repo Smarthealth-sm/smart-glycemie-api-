@@ -1,6 +1,7 @@
 from email.mime.base import MIMEBase
 from email import encoders
 import os
+import sqlite3
 import winsound
 from database import get_connection
 import tkinter as tk
