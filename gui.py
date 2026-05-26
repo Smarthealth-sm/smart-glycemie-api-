@@ -966,9 +966,9 @@ def simulate():
             except Exception as e:
                 print(f"❌ Erreur jour {i+1} :", e)
 
-            # =========================
-            # RAPPORT SEMAINE
-            # =========================
+# =========================
+# RAPPORT SEMAINE
+# =========================
             if (i + 1) % 7 == 0 and len(history_global) > 0:
 
                 avg = sum(history_global) / len(history_global)
@@ -980,32 +980,47 @@ def simulate():
 
                 try:
                     pdf_file = generate_pdf(
-                        history_global,
-                        avg,
-                        max_val,
-                        min_val,
-                        score_global,
-                        interpretation,
-                        reco,
-                        patient_info,
-                        summary_text,
-                        report_name=f"{patient_info['email']}_Semaine_{(i+1)//7}"
-                    )
+            history_global,
+            avg,
+            max_val,
+            min_val,
+            score_global,
+            interpretation,
+            reco,
+            patient_info,
+            summary_text,
+            report_name=f"{patient_info['email']}_Semaine_{(i+1)//7}"
+        )
 
                     print(f"✅ Rapport semaine {(i+1)//7} créé")
+
+        # ✅ ENVOI EMAIL
+                    send_periodic_report(
+            f"Hebdomadaire - Semaine {(i+1)//7}",
+            history_global
+        )
+
+                    send_diagnostic_email(
+            f"Hebdomadaire - Semaine {(i+1)//7}"
+        )
+
+                    send_diagnostic_with_pdf(
+            f"Hebdomadaire - Semaine {(i+1)//7}"
+        )
 
                     try:
                         with open(pdf_file, "rb") as f:
                             requests.post(
-                                "https://smart-glycemie-api.onrender.com/upload_pdf",
-                                files={
-                                    "file": (
-                                        os.path.basename(pdf_file),
-                                        f,
-                                        "application/pdf"
-                                    )
-                                }
-                            )
+                    "https://smart-glycemie-api.onrender.com/upload_pdf",
+                    files={
+                        "file": (
+                            os.path.basename(pdf_file),
+                            f,
+                            "application/pdf"
+                        )
+                    }
+                )
+
                         print("✅ PDF semaine uploadé")
 
                     except Exception as e:
@@ -1041,7 +1056,19 @@ def simulate():
                 )
 
                 print("✅ Rapport mensuel créé")
+                # ✅ ENVOI EMAIL MENSUEL
+                send_periodic_report(
+                 "Mensuel",
+                 history_global
+                    )
 
+                send_diagnostic_email(
+                    "Mensuel"
+                )
+
+                send_diagnostic_with_pdf(
+                  "Mensuel"
+                )
                 try:
                     with open(pdf_file, "rb") as f:
                         requests.post(
