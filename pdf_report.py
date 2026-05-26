@@ -132,7 +132,7 @@ report_name="rapport"
     # =========================
     # IA
     # =========================
-    content.append(Paragraph("Analyse par IA", style_section))
+    content.append(Paragraph("Analyse", style_section))
 
     # calcul état global
     if avg < 70:
@@ -146,7 +146,7 @@ report_name="rapport"
 
     ia_text = f"""
     <b>Score de risque :</b> {score_ia*100:.2f}%<br/>
-    <b>Interprétation IA :</b> {interpretation}<br/>
+    <b>Interprétation :</b> {interpretation}<br/>
     <b>État global :</b> {etat_global}
     """
 
