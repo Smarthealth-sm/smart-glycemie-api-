@@ -1,9 +1,8 @@
 from email.mime.base import MIMEBase
 from email import encoders
 import os
-import sqlite3
 import winsound
-from database import get_connection
+import sqlite3
 import tkinter as tk
 from tkinter import ttk, messagebox
 import matplotlib.pyplot as plt
@@ -73,13 +72,13 @@ mode_affichage = "detail"
 
 
 def load_patient_from_db(email):
-    conn = get_connection()
+    conn = sqlite3.connect("glycemia.db")
     cursor = conn.cursor()
 
     cursor.execute("""
         SELECT sexe, grossesses, age, bmi, diabetique, email, telephone, profile
         FROM patient
-        WHERE email=%s
+        WHERE email=?
     """, (email,))
 
     row = cursor.fetchone()
@@ -566,7 +565,7 @@ def open_patient_sheet():
 
         profiles_list = ["normal", "hyper", "hypo", "instable"]
 
-        conn = get_connection()
+        conn = sqlite3.connect("glycemia.db")
         cursor = conn.cursor()
 
         cursor.execute("""
